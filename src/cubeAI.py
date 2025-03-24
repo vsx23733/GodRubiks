@@ -115,7 +115,7 @@ def cubies_scoring(current_state : dict, end_state : dict):
                 if current_state[face][i][j][0] != end_state[face][i][j][0]:
                     cubie_score += 1
 
-    return cubie_score # From variables.py
+    return cubie_score 
 
 def genetic_algorithm(cube : RubikCube, start_state : dict, end_state : dict, 
                       drop_add : int, num_gen : int, fitness_func,
@@ -193,7 +193,6 @@ class ChooseBestMoveAI():
         self.neurons.append(Neuron(sequence, occurence))
 
     def compute_fitness(self, current_state : dict, end_state : dict, scoring_func=cubies_scoring):
-        # distance = get_distance_between_states(cube.get_state()[0], end_state) 
         return scoring_func(current_state, end_state)
 
     def train(self, drop_add : int, num_gen : int, epochs : int):
@@ -218,14 +217,14 @@ class ChooseBestMoveAI():
                 print("Solution found!")
 
     def execute(self):
-        print("Cube before apply the sequence of moves:")
-        print(self.cube.get_state())
+        #print("Cube before applying the sequence of moves:")
+        #print(self.cube.get_state())
         for i, neuron in enumerate(self.neurons):
             print(f"The cube is passing through the Neuron {i+1}")
             neuron.execute_sequence(self.cube)
             print(f"The cube has finished to pass through the Neuron {i+1}")
         
-        print(self.cube.get_state())
+        #print(self.cube.get_state())
 
         return self.cube.get_state()
 
@@ -236,24 +235,18 @@ class ChooseBestMoveAI():
 
 cube = RubikCube()
 end_state = cube.get_state()[0]
-print(f"End state : \n{end_state}")
+#print(f"End state : \n{end_state}")
 start_state = cube.copy().scramble().get_state()[0]
-print(f"Start state : \n{start_state}")
+#print(f"Start state : \n{start_state}")
 copy_cube = cube.copy().scramble()
-"""sequence = generate_sequence(base_sequence=base_moves(front_face="F"), drop_add=1, random_state=28)
-sequence = genetic_algorithm(copy_cube, start_state, end_state, drop_add=1, num_gen=100, base_sequence=sequence)
-for move in sequence:
-    move.execute(copy_cube, is_row=True)
-print("Final state after applying the best sequence :")
-print(copy_cube.get_state()[0])"""
 
 # AI
 
 bestMoveAI = ChooseBestMoveAI(start_state, end_state, copy_cube)
 bestMoveAI.add_neuron(base_moves("F"), 2)
-#bestMoveAI.add_neuron(base_moves("U"), 2)
-#bestMoveAI.add_neuron(base_moves("D"), 1)
-#bestMoveAI.add_neuron(base_moves("B"), 1)
+bestMoveAI.add_neuron(base_moves("U"), 2)
+bestMoveAI.add_neuron(base_moves("D"), 1)
+bestMoveAI.add_neuron(base_moves("B"), 1)
 
 bestMoveAI.train(drop_add=2, num_gen=10, epochs=10)
 bestMoveAI.execute()
