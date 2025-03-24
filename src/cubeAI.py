@@ -131,7 +131,7 @@ def genetic_algorithm(cube : RubikCube, start_state : dict, end_state : dict,
     second_best_sequence = None
     for i in range(0, num_gen):
         distance_gen = [] # List of the distance between the end state and the current state for each sequence in the first generation
-        print(f""""Generation {i+1} :
+        print(f"""Generation {i+1} :
               Testing sequences...""")
 
         for j, sequence in enumerate(gen_list[i]):
@@ -173,7 +173,7 @@ def genetic_algorithm(cube : RubikCube, start_state : dict, end_state : dict,
 
         new_gen = [mutate(generate_sequence(best_sequence_mutated, drop_add, random_state=distance_gen[distance_gen.index(best_distance)]), 0.1) for _ in range(n)] # Using the child of the 2 best sequences to generate the next generation
         gen_list.append(new_gen)
-        print(f"Generation {i+1} best score: {best_distance}")
+        print(f"Generation {i+1} best score: {best_distance}\n")
 
     winning_sequence = gen_list[-1][distance_gen.index(min(distance_gen))]
     return winning_sequence
