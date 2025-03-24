@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>1444</width>
+    <height>914</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>MainWindow</string>
+  </property>
+  <widget class="QWidget" name="centralwidget">
+   <widget class="QGroupBox" name="groupBox">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>10</y>
+      <width>1411</width>
+      <height>851</height>
+     </rect>
+    </property>
+    <property name="title">
+     <string>Home</string>
+    </property>
+    <widget class="QPushButton" name="digitalizeButton">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>760</y>
+       <width>621</width>
+       <height>71</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Digitize your Rubiks Cube</string>
+     </property>
+    </widget>
+    <widget class="QPlainTextEdit" name="plainTextEdit">
+     <property name="geometry">
+      <rect>
+       <x>0</x>
+       <y>20</y>
+       <width>1401</width>
+       <height>131</height>
+      </rect>
+     </property>
+     <property name="plainText">
+      <string>Welcome to my Rubik's cube App
+
+Here we play with Rubik's Cubes to solve them
+You got two options. You can either digitalize your cube and my app will solve it, or scramble the digital cube I own then see how my app solve it. 
+
+You have the choice !! 
+Take fun and learn 😉</string>
+     </property>
+    </widget>
+    <widget class="QLabel" name="digitalizerCoverLabel">
+     <property name="geometry">
+      <rect>
+       <x>40</x>
+       <y>210</y>
+       <width>581</width>
+       <height>421</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>TextLabel</string>
+     </property>
+    </widget>
+    <widget class="QPushButton" name="useAppCubeButton">
+     <property name="geometry">
+      <rect>
+       <x>770</x>
+       <y>760</y>
+       <width>621</width>
+       <height>71</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Use App's Rubik's Cube</string>
+     </property>
+    </widget>
+    <widget class="QLabel" name="useAppFeautureCover">
+     <property name="geometry">
+      <rect>
+       <x>790</x>
+       <y>210</y>
+       <width>581</width>
+       <height>421</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>TextLabel</string>
+     </property>
+    </widget>
+   </widget>
+  </widget>
+  <widget class="QMenuBar" name="menubar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>1444</width>
+     <height>26</height>
+    </rect>
+   </property>
+  </widget>
+  <widget class="QStatusBar" name="statusbar"/>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>
