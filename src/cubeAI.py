@@ -131,17 +131,16 @@ def genetic_algorithm(cube : RubikCube, start_state : dict, end_state : dict,
     second_best_sequence = None
     for i in range(0, num_gen):
         distance_gen = [] # List of the distance between the end state and the current state for each sequence in the first generation
-        print(f"Generation {i+1} : \n")
+        print(f""""Generation {i+1} :
+              Testing sequences...""")
 
         for j, sequence in enumerate(gen_list[i]):
-            #print(f"Testing sequence {j+1} : ")
             copy_cube = cube.copy()
             for move in sequence:
                 move.execute(copy_cube, is_row=True)
 
             current_state = copy_cube.get_state()[0]
             score_actual_end = fitness_func(current_state, end_state) # Compute the score of the current state
-            #print(f"Score after appying sequence {j+1} : {score_actual_end}")
             distance_gen.append(score_actual_end)
 
         distance_gen_duffer = copy.deepcopy(distance_gen)
@@ -171,12 +170,11 @@ def genetic_algorithm(cube : RubikCube, start_state : dict, end_state : dict,
                 move.execute(copy_cube, is_row=True)
             crossover_score = fitness_func(copy_cube.get_state()[0], end_state)
 
-        #print("Child of best sequences are born : ")
-        #print(best_sequence_mutated)
+
         new_gen = [mutate(generate_sequence(best_sequence_mutated, drop_add, random_state=distance_gen[distance_gen.index(best_distance)]), 0.1) for _ in range(n)] # Using the child of the 2 best sequences to generate the next generation
         gen_list.append(new_gen)
         print(f"Generation {i+1} best score: {best_distance}")
-        #print(f"Generation {i+1} best sequence: {best_sequence}")
+
     winning_sequence = gen_list[-1][distance_gen.index(min(distance_gen))]
     return winning_sequence
     
@@ -213,11 +211,11 @@ class ChooseBestMoveAI():
         for epoch in range(epochs):
             best_fitness = float("inf")
             copy_cube = self.cube.copy()
-            for neuron in self.neurons:
+            for id, neuron in enumerate(self.neurons):
                 neuron.execute_sequence(copy_cube)
                 current_state = copy_cube.get_state()[0]
                 self.start_state = current_state
-
+                print(f"Genetic Search for neuron ... {id+1}")
                 neuron.sequence = genetic_algorithm(copy_cube, self.start_state, self.end_state, drop_add, num_gen, fitness_func=self.compute_fitness, base_sequence=neuron.sequence)
                 neuron.execute_sequence(copy_cube) # Execute the optimized sequence for the neuron
                 fitness = self.compute_fitness(copy_cube.get_state()[0], self.end_state)
