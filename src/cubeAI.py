@@ -192,7 +192,7 @@ class ChooseBestMoveAI():
     def add_neuron(self, sequence: list[Move], occurence: int):
         self.neurons.append(Neuron(sequence, occurence))
 
-    def compute_fitness(self, current_state : dict, end_state : dict, scoring_func=ec_scoring):
+    def compute_fitness(self, current_state : dict, end_state : dict, scoring_func=cubies_scoring):
         # distance = get_distance_between_states(cube.get_state()[0], end_state) 
         return scoring_func(current_state, end_state)
 
