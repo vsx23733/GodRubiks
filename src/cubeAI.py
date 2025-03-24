@@ -158,12 +158,12 @@ def genetic_algorithm(cube : RubikCube, start_state : dict, end_state : dict,
             second_best_sequence = gen_list[i][second_best_idx]
         
         best_sequence_mutated = crossover(best_sequence, second_best_sequence)
-        print("Child of best sequences are born : ")
-        print(best_sequence_mutated)
+        #print("Child of best sequences are born : ")
+        #print(best_sequence_mutated)
         new_gen = [mutate(generate_sequence(best_sequence, drop_add, random_state=distance_gen[distance_gen.index(best_distance)]), 0.1) for _ in range(n)]
         gen_list.append(new_gen)
         print(f"Generation {i+1} best score: {best_distance}")
-        print(f"Generation {i+1} best sequence: {best_sequence}")
+        #print(f"Generation {i+1} best sequence: {best_sequence}")
     winning_sequence = gen_list[-1][distance_gen.index(min(distance_gen))]
     return winning_sequence
     
