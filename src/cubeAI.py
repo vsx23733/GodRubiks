@@ -263,3 +263,28 @@ bestMoveAI.add_neuron(base_moves("B"), 1)
 bestMoveAI.train(drop_add=2, num_gen=10, epochs=10)
 bestMoveAI.execute()
 
+"""
+Selection Strategy:
+
+Currently, it picks the two best sequences. You could implement tournament selection or roulette wheel selection to balance exploration and exploitation.
+
+Crossover Logic:
+
+The crossover process could introduce more variation. Instead of just swapping halves, you could use random cut points or blended crossover to ensure new move combinations.
+
+Mutation Strategy:
+
+Right now, mutation happens randomly across moves. A more refined approach would be adaptive mutation, where mutation probability decreases as generations progress to avoid random disruptions.
+
+Efficiency Improvements:
+
+The function generate_sequence() has redundant code for random_state > 10 and <= 10. It could be simplified.
+
+The function get_distance_between_states() loops through all cube faces but doesn't consider move penalties—consider weighting moves based on how disruptive they are.
+
+Logging & Debugging:
+
+Adding real-time progress visualization (like matplotlib for fitness scores) would help track convergence.
+
+Store move sequences in a log file for analysis.
+"""
