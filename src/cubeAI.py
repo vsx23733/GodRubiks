@@ -206,6 +206,7 @@ class ChooseBestMoveAI():
                 self.start_state = current_state
 
                 neuron.sequence = genetic_algorithm(copy_cube, self.start_state, self.end_state, drop_add, num_gen, fitness_func=self.compute_fitness, base_sequence=neuron.sequence)
+                neuron.execute_sequence(copy_cube) # Execute the optimized sequence for the neuron
                 fitness = self.compute_fitness(copy_cube.get_state()[0], self.end_state)
                 neuron.occurence = random.randint(1, 10 - fitness // 10)
 
