@@ -134,14 +134,14 @@ def genetic_algorithm(cube : RubikCube, start_state : dict, end_state : dict,
         print(f"Generation {i+1} : \n")
 
         for j, sequence in enumerate(gen_list[i]):
-            print(f"Testing sequence {j+1} : ")
+            #print(f"Testing sequence {j+1} : ")
             copy_cube = cube.copy()
             for move in sequence:
                 move.execute(copy_cube, is_row=True)
 
             current_state = copy_cube.get_state()[0]
             score_actual_end = fitness_func(current_state, end_state) # Compute the score of the current state
-            print(f"Score after appying sequence {j+1} : {score_actual_end}")
+            #print(f"Score after appying sequence {j+1} : {score_actual_end}")
             distance_gen.append(score_actual_end)
 
         distance_gen_duffer = copy.deepcopy(distance_gen)
@@ -157,7 +157,20 @@ def genetic_algorithm(cube : RubikCube, start_state : dict, end_state : dict,
             best_sequence = gen_list[i][best_idx]
             second_best_sequence = gen_list[i][second_best_idx]
         
+        #############
+        # Crossover #
+        #############
+
         best_sequence_mutated = crossover(best_sequence, second_best_sequence)
+        for move in best_sequence_mutated:
+            move.execute(copy_cube, is_row=True)
+        crossover_score = fitness_func(copy_cube.get_state()[0], end_state)
+        while crossover_score > best_score | crossover_score > second_best_distance:
+            best_sequence_mutated = crossover(best_sequence, second_best_sequence)
+            for move in best_sequence_mutated:
+                move.execute(copy_cube, is_row=True)
+            crossover_score = fitness_func(copy_cube.get_state()[0], end_state)
+
         #print("Child of best sequences are born : ")
         #print(best_sequence_mutated)
         new_gen = [mutate(generate_sequence(best_sequence_mutated, drop_add, random_state=distance_gen[distance_gen.index(best_distance)]), 0.1) for _ in range(n)] # Using the child of the 2 best sequences to generate the next generation
