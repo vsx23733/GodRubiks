@@ -242,15 +242,18 @@ class ChooseBestMoveAI():
             best_fitness = float("inf")
             copy_cube = self.cube.copy()
             for id, neuron in enumerate(self.neurons):
-                neuron.execute_sequence(copy_cube)
+                # neuron.execute_sequence(copy_cube)
                 current_state = copy_cube.get_state()[0]
                 self.start_state = current_state
-                print(f"Genetic Search for neuron ... {id+1}")
-                neuron.sequence = genetic_algorithm(copy_cube, self.start_state, self.end_state, drop_add, num_gen, fitness_func=self.compute_fitness, base_sequence=neuron.sequence)
-                neuron.execute_sequence(copy_cube) # Execute the optimized sequence for the neuron
-                fitness = self.compute_fitness(copy_cube.get_state()[0], self.end_state)
-                neuron.occurence = random.randint(1, 10 - fitness // 10)
 
+                print(f"Genetic Search for neuron ... {id+1}")
+                for _ in range(10):
+                    neuron.sequence = genetic_algorithm(copy_cube, self.start_state, self.end_state, drop_add, num_gen, fitness_func=self.compute_fitness, base_sequence=neuron.sequence)
+
+                neuron.occurence = random.randint(1, 2)
+                neuron.execute_sequence(copy_cube) # Execute the optimized sequence for the neuron
+
+                fitness = self.compute_fitness(copy_cube.get_state()[0], self.end_state)
                 best_fitness = min(best_fitness, fitness)
 
             print(f"Epoch {epoch + 1}: Best Fitness = {best_fitness}")
@@ -259,15 +262,11 @@ class ChooseBestMoveAI():
                 print("Solution found!")
 
     def execute(self):
-        #print("Cube before applying the sequence of moves:")
-        #print(self.cube.get_state())
         for i, neuron in enumerate(self.neurons):
             print(f"The cube is passing through the Neuron {i+1}")
             neuron.execute_sequence(self.cube)
             print(f"The cube has finished to pass through the Neuron {i+1}")
         
-        #print(self.cube.get_state())
-
         return self.cube.get_state()
 
 ## Next step : Impove the Genetic Algorithm 
@@ -277,9 +276,7 @@ class ChooseBestMoveAI():
 
 cube = RubikCube()
 end_state = cube.get_state()[0]
-#print(f"End state : \n{end_state}")
 start_state = cube.copy().scramble().get_state()[0]
-#print(f"Start state : \n{start_state}")
 copy_cube = cube.copy().scramble()
 
 # AI
@@ -294,23 +291,13 @@ bestMoveAI.train(drop_add=2, num_gen=10, epochs=10)
 bestMoveAI.execute()
 
 """
-Selection Strategy:
+Great improvement made on the genetic algorithm logic but takes a lot of time.
 
-Currently, it picks the two best sequences. You could implement tournament selection or roulette wheel selection to balance exploration and exploitation.
+1. The information from each epoch is lost, need to find a way to take all the weights of the neurons of the previous epoch to give it to the next epoch
 
-Crossover Logic:
+2. Each neurons is tested and fine tuned individually on the staart state of the cube whihc in real life is not correct.
+Need to find a way of refining the algorithm where he neuron 1 is fine tuned on the start state, the neuron 2 is fine tuned on intermediary state 1 etc.
 
-The crossover process could introduce more variation. Instead of just swapping halves, you could use random cut points or blended crossover to ensure new move combinations.
-
-Mutation Strategy:
-
-Right now, mutation happens randomly across moves. A more refined approach would be adaptive mutation, where mutation probability decreases as generations progress to avoid random disruptions.
-
-Efficiency Improvements:
-
-The function generate_sequence() has redundant code for random_state > 10 and <= 10. It could be simplified.
-
-The function get_distance_between_states() loops through all cube faces but doesn't consider move penalties—consider weighting moves based on how disruptive they are.
 
 Logging & Debugging:
 
