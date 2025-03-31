@@ -12,7 +12,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 from rubiksCube import RubikCube
 import pyfiglet
 import sys
-import cubeSolver # Import the cubeSolver module if the user wants to solve the App's cube
+import cubeAI # Import the cubeSolver module if the user wants to solve the App's cube
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):

@@ -1,5 +1,5 @@
 from ursina import *
-from variables import *
+from config import *
 
 class Game:
     def __init__(self):

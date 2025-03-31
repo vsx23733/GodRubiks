@@ -2,7 +2,7 @@ from cubeSolvingFunction import Move, get_neighbors, check_valid_white_cross, is
 from rubiksCube import RubikCube
 import random
 import copy
-from variables import *
+from config import *
 
 def drop_from_list(elem, lst : list):
     list_buffer = lst.copy()
