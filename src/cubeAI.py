@@ -186,7 +186,6 @@ def genetic_algorithm(cube : RubikCube, start_state : dict, end_state : dict,
         mutation_rate = mutation_rate - ((i+1)/10)
         gen_list.append(new_gen)
         print(f"Generation {i+1} best score: {best_distance}\n")
-    # print("Generation data registered :", len(gen_dict))
 
     # Selecting the best sequence over all existing generation
     winning_sequence = None
@@ -242,7 +241,6 @@ class ChooseBestMoveAI():
             best_fitness = float("inf")
             copy_cube = self.cube.copy()
             for id, neuron in enumerate(self.neurons):
-                # neuron.execute_sequence(copy_cube)
                 current_state = copy_cube.get_state()[0]
                 self.start_state = current_state
 
@@ -293,9 +291,13 @@ bestMoveAI.execute()
 """
 Great improvement made on the genetic algorithm logic but takes a lot of time.
 
-1. The information from each epoch is lost, need to find a way to take all the weights of the neurons of the previous epoch to give it to the next epoch
+Next improvements: 
 
-2. Each neurons is tested and fine tuned individually on the staart state of the cube whihc in real life is not correct.
+1. The information from each epoch is lost, need to find a way to take all the weights of the neurons of the previous epoch to give it to the next epoch.
+
+2. Need to find a way of fine tunin the num of occurences (parameter of the neuron)
+
+3. Each neurons is tested and fine tuned individually on the staart state of the cube whihc in real life is not correct.
 Need to find a way of refining the algorithm where he neuron 1 is fine tuned on the start state, the neuron 2 is fine tuned on intermediary state 1 etc.
 
 
