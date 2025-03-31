@@ -122,7 +122,7 @@ def genetic_algorithm(cube : RubikCube, start_state : dict, end_state : dict,
     """
     Genetic algorithm to optimize the sequence of moves
     """
-    n = 100 # The number of generation to be genrated
+    n = 100 # The number of sequence to be genrated
     gen_0 = [generate_sequence(base_sequence, drop_add, random_state=20) for _ in range(n)] # Generate n random sequences for the first generation
     gen_list = [gen_0] # List to store all the generations
     best_score = float("inf") # Initialization of the best score to infinite for selection
@@ -181,50 +181,31 @@ def genetic_algorithm(cube : RubikCube, start_state : dict, end_state : dict,
                 move.execute(copy_cube, is_row=True)
             crossover_score = fitness_func(copy_cube.get_state()[0], end_state)
 
-        gen_dict[i] = [gen_list[i], distance_gen]
+        gen_dict[i] = (gen_list[i], distance_gen)
         new_gen = [mutate(generate_sequence(best_sequence_mutated, drop_add, random_state=distance_gen[distance_gen.index(best_distance)]), mutation_rate) for _ in range(n)] # Using the child of the 2 best sequences to generate the next generation
         mutation_rate = mutation_rate - ((i+1)/10)
         gen_list.append(new_gen)
         print(f"Generation {i+1} best score: {best_distance}\n")
+    # print("Generation data registered :", len(gen_dict))
 
-    # Selecting the best gen accross all gen
-    winning_gen_idx = None
-    winning_gen_data = None
-   
-    best_sequence_scores = [float("inf") for _ in range(n)]
-    list_num_good_distance = []
-
-    for l, gen_data in enumerate(gen_dict.values()):
-        num_good_distance = 0
-        for k, score in enumerate(best_sequence_scores):
-            if score < gen_data[1][k]:
-                num_good_distance += 1
-        best_sequence_scores = gen_data[1] # Switching the list of scores to compare from list of inf to the next list of score
-        list_num_good_distance.append(num_good_distance)
-    # print(gen_data)
-    winning_gen_idx = list_num_good_distance.index(max(list_num_good_distance))
-    winning_gen_data = list(gen_dict.values())[winning_gen_idx]
-
-    # Selecting the best sequence in the best gen
+    # Selecting the best sequence over all existing generation
     winning_sequence = None
     winning_sequence_idx = None
+    winning_gen_idx = None
     best_score_for_winning_seq = float("inf")
 
-    # print("Winning gen data: ")
-    # print(winning_gen_data)
-
-    for g, seq in enumerate(winning_gen_data[0]):
-        score = winning_gen_data[1][g]
-        if score < best_score_for_winning_seq:
-            best_score_for_winning_seq = score
-            winning_sequence = seq
-            winning_sequence_idx = i
+    for gen_idx, gen_data in gen_dict.items():
+        for q, (seq, score) in enumerate(list(zip(gen_data[0], gen_data[1]))):
+            if score < best_score_for_winning_seq:
+                best_score_for_winning_seq = score
+                winning_sequence = seq
+                winning_sequence_idx = q
+                winning_gen_idx = gen_idx
 
 
     print("Winning Gen: ", winning_gen_idx)
     print("Winning Seq in gen {}: {}".format(winning_gen_idx, winning_sequence_idx))
     print(f"Score for Winning seq: {best_score_for_winning_seq}")
-    # print(winning_sequence)
     return winning_sequence
     
 
