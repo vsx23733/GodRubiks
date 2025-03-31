@@ -77,11 +77,10 @@ def crossover(seq1 : list[Move], seq2 : list[Move]):
 
 def mutate(sequence : list[Move], mutation_rate : float) -> list[Move]:
     mutated_sequence = copy.deepcopy(sequence)
-    for i in range(len(mutated_sequence)):
-        if random.random() < mutation_rate:
+    for i in range(int(mutation_rate * len(mutated_sequence))):
             mutated_sequence[i] = Move(
                 face=random.choice(["F", "R", "L", "U", "D", "B"]),
-                num_rotations=random.randint(1, 2),
+                num_rotations=random.randint(1, 3),
                 is_clockwise=random.choice([True, False])
             )
 
@@ -123,13 +122,18 @@ def genetic_algorithm(cube : RubikCube, start_state : dict, end_state : dict,
     """
     Genetic algorithm to optimize the sequence of moves
     """
-    n = 100
+    n = 100 # The number of generation to be genrated
     gen_0 = [generate_sequence(base_sequence, drop_add, random_state=20) for _ in range(n)] # Generate n random sequences for the first generation
-    gen_list = [gen_0]
-    best_score = float("inf")
+    gen_list = [gen_0] # List to store all the generations
+    best_score = float("inf") # Initialization of the best score to infinite for selection
+    gen_dict = {} # Store in this dictionnary all the data related to the Genetic algorithm training 
+                  # Index as key, list[gen, distance_gen]
+    mutation_rate = 1 # Will decrease evenly as we create generation
     best_sequence = None
     second_best_sequence = None
+
     for i in range(0, num_gen):
+
         distance_gen = [] # List of the distance between the end state and the current state for each sequence in the first generation
         print(f"""Generation {i+1} :
               Testing sequences...""")
@@ -144,9 +148,14 @@ def genetic_algorithm(cube : RubikCube, start_state : dict, end_state : dict,
             distance_gen.append(score_actual_end)
 
         distance_gen_duffer = copy.deepcopy(distance_gen)
+
+        # Selecting the best distance
         best_distance = min(distance_gen)
         best_idx = distance_gen.index(best_distance)
+
         distance_gen_duffer.remove(best_distance)
+
+        # Selecting the second best distance
         second_best_distance = min(distance_gen_duffer)
         second_best_idx = distance_gen_duffer.index(second_best_distance) - 1
 
@@ -159,29 +168,69 @@ def genetic_algorithm(cube : RubikCube, start_state : dict, end_state : dict,
         #############
         # Crossover #
         #############
-
+        # print("                             Best Sequence: ", best_sequence)
+        # print("                             Second best sequence: ", second_best_sequence )
         best_sequence_mutated = crossover(best_sequence, second_best_sequence)
         for move in best_sequence_mutated:
             move.execute(copy_cube, is_row=True)
         crossover_score = fitness_func(copy_cube.get_state()[0], end_state)
-        while crossover_score > best_score | crossover_score > second_best_distance:
+        while crossover_score > best_score | crossover_score > second_best_distance: # Score needs to be as low as possible
+                                                                                     # Resolved state --> Score 0 
             best_sequence_mutated = crossover(best_sequence, second_best_sequence)
             for move in best_sequence_mutated:
                 move.execute(copy_cube, is_row=True)
             crossover_score = fitness_func(copy_cube.get_state()[0], end_state)
 
-
-        new_gen = [mutate(generate_sequence(best_sequence_mutated, drop_add, random_state=distance_gen[distance_gen.index(best_distance)]), 0.1) for _ in range(n)] # Using the child of the 2 best sequences to generate the next generation
+        gen_dict[i] = [gen_list[i], distance_gen]
+        new_gen = [mutate(generate_sequence(best_sequence_mutated, drop_add, random_state=distance_gen[distance_gen.index(best_distance)]), mutation_rate) for _ in range(n)] # Using the child of the 2 best sequences to generate the next generation
+        mutation_rate = mutation_rate - ((i+1)/10)
         gen_list.append(new_gen)
         print(f"Generation {i+1} best score: {best_distance}\n")
 
-    winning_sequence = gen_list[-1][distance_gen.index(min(distance_gen))]
+    # Selecting the best gen accross all gen
+    winning_gen_idx = None
+    winning_gen_data = None
+   
+    best_sequence_scores = [float("inf") for _ in range(n)]
+    list_num_good_distance = []
+
+    for l, gen_data in enumerate(gen_dict.values()):
+        num_good_distance = 0
+        for k, score in enumerate(best_sequence_scores):
+            if score < gen_data[1][k]:
+                num_good_distance += 1
+        best_sequence_scores = gen_data[1] # Switching the list of scores to compare from list of inf to the next list of score
+        list_num_good_distance.append(num_good_distance)
+    # print(gen_data)
+    winning_gen_idx = list_num_good_distance.index(max(list_num_good_distance))
+    winning_gen_data = list(gen_dict.values())[winning_gen_idx]
+
+    # Selecting the best sequence in the best gen
+    winning_sequence = None
+    winning_sequence_idx = None
+    best_score_for_winning_seq = float("inf")
+
+    # print("Winning gen data: ")
+    # print(winning_gen_data)
+
+    for g, seq in enumerate(winning_gen_data[0]):
+        score = winning_gen_data[1][g]
+        if score < best_score_for_winning_seq:
+            best_score_for_winning_seq = score
+            winning_sequence = seq
+            winning_sequence_idx = i
+
+
+    print("Winning Gen: ", winning_gen_idx)
+    print("Winning Seq in gen {}: {}".format(winning_gen_idx, winning_sequence_idx))
+    print(f"Score for Winning seq: {best_score_for_winning_seq}")
+    # print(winning_sequence)
     return winning_sequence
     
 
 class Neuron:
 
-    def __init__(self, sequence : list[Move], occurence : int):
+    def __init__(self, sequence: list[Move], occurence: int):
         self.sequence = sequence # Sequence of Moves that the neuron should perform  
         self.occurence = occurence # List of the number of times the sequence should be performed
         pass
