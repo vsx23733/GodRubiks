@@ -3,6 +3,7 @@ from rubiksCube import RubikCube
 import random
 import copy
 from config import *
+import time
 
 def drop_from_list(elem, lst : list):
     list_buffer = lst.copy()
@@ -122,7 +123,7 @@ def genetic_algorithm(cube : RubikCube, start_state : dict, end_state : dict,
     """
     Genetic algorithm to optimize the sequence of moves
     """
-    n = 100 # The number of sequence to be genrated
+    n = 30 # The number of sequence to be generated
     gen_0 = [generate_sequence(base_sequence, drop_add, random_state=20) for _ in range(n)] # Generate n random sequences for the first generation
     gen_list = [gen_0] # List to store all the generations
     best_score = float("inf") # Initialization of the best score to infinite for selection
@@ -136,7 +137,7 @@ def genetic_algorithm(cube : RubikCube, start_state : dict, end_state : dict,
 
         distance_gen = [] # List of the distance between the end state and the current state for each sequence in the first generation
         print(f"""Generation {i+1} :
-              Testing sequences...""")
+        Testing sequences...""")
 
         for j, sequence in enumerate(gen_list[i]):
             copy_cube = cube.copy()
@@ -235,29 +236,74 @@ class ChooseBestMoveAI():
     def compute_fitness(self, current_state : dict, end_state : dict, scoring_func=cubies_scoring):
         return scoring_func(current_state, end_state)
 
-    def train(self, drop_add : int, num_gen : int, epochs : int):
-        
+    def train(self, drop_add: int, num_gen: int, epochs: int):
+        time_out = 5 * 60  # Max time per neuron retry loop (seconds)
+
         for epoch in range(epochs):
-            best_fitness = float("inf")
+            print(f"\n🔁 Starting Epoch {epoch + 1}...\n")
             copy_cube = self.cube.copy()
-            for id, neuron in enumerate(self.neurons):
-                current_state = copy_cube.get_state()[0]
-                self.start_state = current_state
+            self.start_state = copy_cube.get_state()[0]
 
-                print(f"Genetic Search for neuron ... {id+1}")
-                for _ in range(10):
-                    neuron.sequence = genetic_algorithm(copy_cube, self.start_state, self.end_state, drop_add, num_gen, fitness_func=self.compute_fitness, base_sequence=neuron.sequence)
+            epoch_best_fitness = float("inf")
 
+            for neuron_id, neuron in enumerate(self.neurons):
+                print(f"🧠 Training Neuron {neuron_id + 1}")
+
+                # Save pre-training fitness
+                initial_fitness = self.compute_fitness(self.start_state, self.end_state)
+                print(f"Initial Fitness before training neuron {neuron_id + 1}: {initial_fitness}")
+
+                best_fitness = float("inf")
+                best_sequence = neuron.sequence
+                trials = 0
+                start_time = time.time()
+
+                while trials < 5 and (time.time() - start_time) < time_out:
+                    # Train with genetic algorithm
+                    candidate_sequence = genetic_algorithm(
+                        cube=copy_cube.copy(),
+                        start_state=self.start_state,
+                        end_state=self.end_state,
+                        drop_add=drop_add,
+                        num_gen=num_gen,
+                        fitness_func=self.compute_fitness,
+                        base_sequence=neuron.sequence
+                    )
+
+                    # Evaluate this candidate
+                    test_cube = copy_cube.copy()
+                    for move in candidate_sequence:
+                        move.execute(test_cube, is_row=True)
+
+                    candidate_fitness = self.compute_fitness(test_cube.get_state()[0], self.end_state)
+                    print(f"  Trial {trials+1}: Candidate Fitness = {candidate_fitness}")
+
+                    if candidate_fitness < best_fitness:
+                        best_fitness = candidate_fitness
+                        best_sequence = candidate_sequence
+
+                    # Stop early if fitness improves
+                    if candidate_fitness < initial_fitness:
+                        break
+
+                    trials += 1
+
+                # Apply best found sequence to the cube
+                neuron.sequence = best_sequence
                 neuron.occurence = random.randint(1, 2)
-                neuron.execute_sequence(copy_cube) # Execute the optimized sequence for the neuron
+                neuron.execute_sequence(copy_cube)
+                self.start_state = copy_cube.get_state()[0]  # Pass to next neuron
 
-                fitness = self.compute_fitness(copy_cube.get_state()[0], self.end_state)
-                best_fitness = min(best_fitness, fitness)
+                # Log neuron training result
+                print(f"✅ Neuron {neuron_id + 1} trained. Fitness after execution: {best_fitness}")
+                epoch_best_fitness = min(epoch_best_fitness, best_fitness)
 
-            print(f"Epoch {epoch + 1}: Best Fitness = {best_fitness}")
+            print(f"\n✅ Epoch {epoch + 1} finished. Best Fitness this epoch: {epoch_best_fitness}")
 
-            if best_fitness == 0:
-                print("Solution found!")
+            if epoch_best_fitness == 0:
+                print("🎉 Solution found!")
+                break
+    # Use the last state of the previous epoch as the start state for the next epoch.
 
     def execute(self):
         for i, neuron in enumerate(self.neurons):
@@ -267,10 +313,7 @@ class ChooseBestMoveAI():
         
         return self.cube.get_state()
 
-## Next step : Impove the Genetic Algorithm 
-# Selection: Retain the top N performing sequences.
-# Crossover: Combine parts of two sequences to create new ones.
-# Mutation: Randomly modify sequences to maintain diversity
+
 
 cube = RubikCube()
 end_state = cube.get_state()[0]
@@ -280,12 +323,32 @@ copy_cube = cube.copy().scramble()
 # AI
 
 bestMoveAI = ChooseBestMoveAI(start_state, end_state, copy_cube)
+
+# Front-focused base
 bestMoveAI.add_neuron(base_moves("F"), 2)
+bestMoveAI.add_neuron(base_moves("F"), 1)
+
+# Up-focused
 bestMoveAI.add_neuron(base_moves("U"), 2)
+bestMoveAI.add_neuron(base_moves("U"), 1)
+
+# Down-focused
+bestMoveAI.add_neuron(base_moves("D"), 2)
 bestMoveAI.add_neuron(base_moves("D"), 1)
+
+# Back-focused
+bestMoveAI.add_neuron(base_moves("B"), 2)
 bestMoveAI.add_neuron(base_moves("B"), 1)
 
-bestMoveAI.train(drop_add=2, num_gen=10, epochs=10)
+# Left & Right: important for layer alignment
+bestMoveAI.add_neuron(base_moves("L"), 2)
+bestMoveAI.add_neuron(base_moves("R"), 2)
+
+# Some with fewer repetitions to allow micro-adjustments
+bestMoveAI.add_neuron(base_moves("L"), 1)
+bestMoveAI.add_neuron(base_moves("R"), 1)
+
+bestMoveAI.train(drop_add=3, num_gen=15, epochs=15)
 bestMoveAI.execute()
 
 """
