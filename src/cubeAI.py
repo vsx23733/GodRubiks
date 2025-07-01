@@ -123,7 +123,7 @@ def genetic_algorithm(cube : RubikCube, start_state : dict, end_state : dict,
     """
     Genetic algorithm to optimize the sequence of moves
     """
-    n = 30 # The number of sequence to be generated
+    n = 50 # The number of sequence to be generated
     gen_0 = [generate_sequence(base_sequence, drop_add, random_state=20) for _ in range(n)] # Generate n random sequences for the first generation
     gen_list = [gen_0] # List to store all the generations
     best_score = float("inf") # Initialization of the best score to infinite for selection
@@ -336,7 +336,7 @@ bestMoveAI.add_neuron(base_moves("U"), 1)
 bestMoveAI.add_neuron(base_moves("D"), 2)
 bestMoveAI.add_neuron(base_moves("D"), 1)
 
-# Back-focused
+""" # Back-focused
 bestMoveAI.add_neuron(base_moves("B"), 2)
 bestMoveAI.add_neuron(base_moves("B"), 1)
 
@@ -345,7 +345,7 @@ bestMoveAI.add_neuron(base_moves("L"), 2)
 bestMoveAI.add_neuron(base_moves("R"), 2)
 
 # Some with fewer repetitions to allow micro-adjustments
-bestMoveAI.add_neuron(base_moves("L"), 1)
+bestMoveAI.add_neuron(base_moves("L"), 1) """
 bestMoveAI.add_neuron(base_moves("R"), 1)
 
 bestMoveAI.train(drop_add=3, num_gen=15, epochs=15)
