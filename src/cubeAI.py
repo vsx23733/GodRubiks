@@ -346,6 +346,8 @@ bestMoveAI.add_neuron(base_moves("R"), 2)
 
 # Some with fewer repetitions to allow micro-adjustments
 bestMoveAI.add_neuron(base_moves("L"), 1) """
+
+
 bestMoveAI.add_neuron(base_moves("R"), 1)
 
 bestMoveAI.train(drop_add=3, num_gen=15, epochs=15)
