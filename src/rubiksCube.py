@@ -1,7 +1,18 @@
 import matplotlib.pyplot as plt
 import numpy as np
 import random
+import sys
+import os
+
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
+
 import copy
+from OpenGL.GL import *
+from OpenGL.GLU import *
+from src.config import *
+import src.OpenGLCube as ogl
+
+
 
 class RubikCube:
     def __init__(self):
@@ -13,12 +24,12 @@ class RubikCube:
         self.green = [["G1", "G2", "G3"], ["G4", "G5", "G6"], ["G7", "G8", "G9"]]
         self.yellow = [["Y1", "Y2", "Y3"], ["Y4", "Y5", "Y6"], ["Y7", "Y8", "Y9"]]
 
-        white_pixels = [["⬜", "⬜", "⬜"], ["⬜", "⬜", "⬜"], ["⬜", "⬜", "⬜"]]
-        blue_pixels = [["🟦", "🟦", "🟦"], ["🟦", "🟦", "🟦"], ["🟦", "🟦", "🟦"]]
-        red_pixels = [["🟥", "🟥", "🟥"], ["🟥", "🟥", "🟥"], ["🟥", "🟥", "🟥"]]
-        orange_pixels = [["🟧", "🟧", "🟧"], ["🟧", "🟧", "🟧"], ["🟧", "🟧", "🟧"]]
-        green_pixels = [["🟩", "🟩", "🟩"], ["🟩", "🟩", "🟩"], ["🟩", "🟩", "🟩"]]
-        yellow_pixels = [["🟨", "🟨", "🟨"], ["🟨", "🟨", "🟨"], ["🟨", "🟨", "🟨"]]
+        self.white_pixels = [["⬜", "⬜", "⬜"], ["⬜", "⬜", "⬜"], ["⬜", "⬜", "⬜"]]
+        self.blue_pixels = [["🟦", "🟦", "🟦"], ["🟦", "🟦", "🟦"], ["🟦", "🟦", "🟦"]]
+        self.red_pixels = [["🟥", "🟥", "🟥"], ["🟥", "🟥", "🟥"], ["🟥", "🟥", "🟥"]]
+        self.orange_pixels = [["🟧", "🟧", "🟧"], ["🟧", "🟧", "🟧"], ["🟧", "🟧", "🟧"]]
+        self.green_pixels = [["🟩", "🟩", "🟩"], ["🟩", "🟩", "🟩"], ["🟩", "🟩", "🟩"]]
+        self.yellow_pixels = [["🟨", "🟨", "🟨"], ["🟨", "🟨", "🟨"], ["🟨", "🟨", "🟨"]]
 
         self.faces = {
             "white": self.white,
@@ -30,13 +41,15 @@ class RubikCube:
         }
         
         self.pixels = {
-            "white": white_pixels,
-            "blue": blue_pixels,
-            "red": red_pixels,
-            "orange": orange_pixels,
-            "green": green_pixels,
-            "yellow": yellow_pixels,
+            "white": self.white_pixels,
+            "blue": self.blue_pixels,
+            "red": self.red_pixels,
+            "orange": self.orange_pixels,
+            "green": self.green_pixels,
+            "yellow": self.yellow_pixels,
         }
+
+        self.visual_cube = ogl.build_cube()
 
     def get_state(self):
         return self.faces, self.is_resolved()
@@ -191,6 +204,36 @@ class RubikCube:
         """
         self.rotate_row_or_column(face_name, row_index, is_row, direction=direction)
 
+    def move(self, move_name: str):
+        face_map = {
+            "U": "white",
+            "D": "yellow",
+            "R": "red",
+            "L": "orange",
+            "F": "green",
+            "B": "blue",
+            "Uw": "yellow",
+            "Dw": "white",
+            "Rw": "orange",
+            "Lw": "red",
+            "Fw": "green",
+            "Bw": "blue",
+        }
+
+        if move_name.endswith("2") or move_name.endswith("2'"):
+            direction = -1 if move_name.endswith("2'") else 1
+            base = move_name[:-2] if move_name.endswith("2") else move_name[:-3]
+            if base in face_map:
+                for _ in range(2):
+                    self.rotate(face_map[base], 0, True, direction)  # assuming row-based
+        else:
+            clockwise = not move_name.endswith("'")
+            base = move_name.rstrip("'")
+            if base in face_map:
+                direction = 1 if clockwise else -1
+                self.rotate(face_map[base], 0, True, direction)
+
+
     def visualize_in_terminal(self):
         U = self.white
         D = self.yellow
@@ -268,20 +311,96 @@ class RubikCube:
             " " * 10 + str9,
             " " * 10 + str10
         ])
+    
+    def apply_move_with_animation(self, move_name: str):
+        """
+        Applies a Rubik's Cube move to both the logical cube and the OpenGL visual cube.
+        Returns the updated visual_cube.
+        """
+        self.move(move_name)  # Update logical state
+
+        # === Standard clockwise moves ===
+        if move_name == "U":
+            ogl.u_animation(1, self.visual_cube)
+            self.visual_cube = ogl.u_move(self.visual_cube)
+        elif move_name == "U'":
+            ogl.u_first_animation(1, self.visual_cube)
+            self.visual_cube = ogl.u_first_move(self.visual_cube)
+
+        elif move_name == "R":
+            ogl.r_animation(1, self.visual_cube)
+            self.visual_cube = ogl.r_move(self.visual_cube)
+        elif move_name == "R'":
+            # You can implement r_first_animation() if needed
+            self.visual_cube = ogl.r_move(self.visual_cube)  # just logic
+
+        elif move_name == "M":
+            ogl.m_animation(1, self.visual_cube)
+            self.visual_cube = ogl.m_move(self.visual_cube)
+        elif move_name == "M'":
+            ogl.m_first_animation(1, self.visual_cube)
+            self.visual_cube = ogl.m_first_move(self.visual_cube)
+
+        elif move_name == "E":
+            ogl.e_animation(1, self.visual_cube)
+            self.visual_cube = ogl.e_move(self.visual_cube)
+        elif move_name == "D":
+            ogl.d_animation(1, self.visual_cube)
+            self.visual_cube = ogl.d_move(self.visual_cube)
+
+        elif move_name == "X'":
+            ogl.x_first_animation(1, self.visual_cube)
+            self.visual_cube = ogl.x_first_move(self.visual_cube)
+
+        elif move_name == "Z":
+            ogl.z_animation(1, self.visual_cube)
+            self.visual_cube = ogl.z_move(self.visual_cube)
+
+        elif move_name == "Z'":
+            # Apply z three times to simulate Z'
+            ogl.z_animation(1, self.visual_cube)
+            self.visual_cube = ogl.z_move(self.visual_cube)
+            ogl.z_animation(1, self.visual_cube)
+            self.visual_cube = ogl.z_move(self.visual_cube)
+            ogl.z_animation(1, self.visual_cube)
+            self.visual_cube = ogl.z_move(self.visual_cube)
+
+        elif move_name == "sexy":
+            ogl.sexy_animation(1, self.visual_cube)
+            self.visual_cube = ogl.sexy_move(self.visual_cube)
+
+        # === Double moves (e.g., U2, R2) ===
+        elif move_name.endswith("2"):
+            base = move_name[:-1]
+            self.visual_cube = self.apply_move_with_animation(base, self.visual_cube)
+            self.visual_cube = self.apply_move_with_animation(base, self.visual_cube)
+
+        # === Double counterclockwise (e.g., U2') ===
+        elif move_name.endswith("2'"):
+            base = move_name[:-2] + "'"
+            self.visual_cube = self.apply_move_with_animation(base, self.visual_cube)
+            self.visual_cube = self.apply_move_with_animation(base, self.visual_cube)
+
 
     
-    def scramble(self):
-        # Perform a random sequence of moves on the cube
-        scrambled_cube = self
-        for _ in range(100):
-            random_face = random.choice(list(scrambled_cube.faces.keys()))
-            random_direction = random.choice([-1, 1])
-            scrambled_cube.rotate(random_face, row_index=0, is_row = True, direction=random_direction)
+    def scramble(self, num_moves=100):
+        """
+        Perform a random sequence of moves using the `move()` method.
+        Default is 100 moves.
+        """
+        valid_moves = ["U", "D", "R", "L", "F", "B", 
+                    "U'", "D'", "R'", "L'", "F'", "B'", 
+                    "U2", "D2", "R2", "L2", "F2", "B2"]
+        
+        for _ in range(num_moves):
+            move = random.choice(valid_moves)
+            self.move(move)
 
-        return scrambled_cube
+        return self
     
     def copy(self):
         return copy.deepcopy(self)
+        
         
 
 if __name__ == "__main__":
