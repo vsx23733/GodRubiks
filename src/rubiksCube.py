@@ -10,7 +10,6 @@ import copy
 from OpenGL.GL import *
 from OpenGL.GLU import *
 from src.config import *
-import src.OpenGLCube as ogl
 
 
 
@@ -49,7 +48,6 @@ class RubikCube:
             "yellow": self.yellow_pixels,
         }
 
-        self.visual_cube = ogl.build_cube()
 
     def get_state(self):
         return self.faces, self.is_resolved()
@@ -311,76 +309,6 @@ class RubikCube:
             " " * 10 + str9,
             " " * 10 + str10
         ])
-    
-    def apply_move_with_animation(self, move_name: str):
-        """
-        Applies a Rubik's Cube move to both the logical cube and the OpenGL visual cube.
-        Returns the updated visual_cube.
-        """
-        self.move(move_name)  # Update logical state
-
-        # === Standard clockwise moves ===
-        if move_name == "U":
-            ogl.u_animation(1, self.visual_cube)
-            self.visual_cube = ogl.u_move(self.visual_cube)
-        elif move_name == "U'":
-            ogl.u_first_animation(1, self.visual_cube)
-            self.visual_cube = ogl.u_first_move(self.visual_cube)
-
-        elif move_name == "R":
-            ogl.r_animation(1, self.visual_cube)
-            self.visual_cube = ogl.r_move(self.visual_cube)
-        elif move_name == "R'":
-            # You can implement r_first_animation() if needed
-            self.visual_cube = ogl.r_move(self.visual_cube)  # just logic
-
-        elif move_name == "M":
-            ogl.m_animation(1, self.visual_cube)
-            self.visual_cube = ogl.m_move(self.visual_cube)
-        elif move_name == "M'":
-            ogl.m_first_animation(1, self.visual_cube)
-            self.visual_cube = ogl.m_first_move(self.visual_cube)
-
-        elif move_name == "E":
-            ogl.e_animation(1, self.visual_cube)
-            self.visual_cube = ogl.e_move(self.visual_cube)
-        elif move_name == "D":
-            ogl.d_animation(1, self.visual_cube)
-            self.visual_cube = ogl.d_move(self.visual_cube)
-
-        elif move_name == "X'":
-            ogl.x_first_animation(1, self.visual_cube)
-            self.visual_cube = ogl.x_first_move(self.visual_cube)
-
-        elif move_name == "Z":
-            ogl.z_animation(1, self.visual_cube)
-            self.visual_cube = ogl.z_move(self.visual_cube)
-
-        elif move_name == "Z'":
-            # Apply z three times to simulate Z'
-            ogl.z_animation(1, self.visual_cube)
-            self.visual_cube = ogl.z_move(self.visual_cube)
-            ogl.z_animation(1, self.visual_cube)
-            self.visual_cube = ogl.z_move(self.visual_cube)
-            ogl.z_animation(1, self.visual_cube)
-            self.visual_cube = ogl.z_move(self.visual_cube)
-
-        elif move_name == "sexy":
-            ogl.sexy_animation(1, self.visual_cube)
-            self.visual_cube = ogl.sexy_move(self.visual_cube)
-
-        # === Double moves (e.g., U2, R2) ===
-        elif move_name.endswith("2"):
-            base = move_name[:-1]
-            self.visual_cube = self.apply_move_with_animation(base, self.visual_cube)
-            self.visual_cube = self.apply_move_with_animation(base, self.visual_cube)
-
-        # === Double counterclockwise (e.g., U2') ===
-        elif move_name.endswith("2'"):
-            base = move_name[:-2] + "'"
-            self.visual_cube = self.apply_move_with_animation(base, self.visual_cube)
-            self.visual_cube = self.apply_move_with_animation(base, self.visual_cube)
-
 
     
     def scramble(self, num_moves=100):
